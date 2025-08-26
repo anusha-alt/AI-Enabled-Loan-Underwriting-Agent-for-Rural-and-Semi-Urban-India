@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Loan Demo</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="phone">
+    <div class="status">AI Loan • Demo</div>
+
+    <!-- Onboarding + KYC -->
+    <div class="screen" id="screen-onboarding">
+      <h1>Onboarding & KYC</h1>
+
+      <div class="card">
+        <label>Name</label>
+        <input id="name" placeholder="Auto from PAN (demo)" />
+        <label>Phone</label>
+        <input id="phone" placeholder="+91 ..." />
+      </div>
+
+      <!-- KYC options -->
+      <div class="card">
+        <h3 style="margin-top:0">KYC Options</h3>
+        <div class="btnrow">
+          <button onclick="startDigi()">Link DigiLocker</button>
+          <button onclick="openDocKyc()">Upload ID</button>
+        </div>
+        <button style="margin-top:10px" onclick="openFace()">Selfie (Liveness + Match)</button>
+      </div>
+
+      <!-- Document KYC -->
+      <div id="dlg-doc" class="card hidden">
+        <h3 style="margin-top:0">Document KYC</h3>
+        <div class="btnrow">
+          <button onclick="docPrecheck('PAN')">PAN</button>
+          <button onclick="docPrecheck('AADHAAR_OFFLINE')">Aadhaar</button>
+        </div>
+        <div id="docStatus" class="tip"></div>
+      </div>
+
+      <!-- Face KYC with camera -->
+      <div id="dlg-face" class="card hidden">
+        <h3 style="margin-top:0">Selfie Check</h3>
+
+        <div style="display:flex; gap:10px; align-items:flex-start">
+          <video id="cam" autoplay playsinline muted style="width:160px;height:120px;border-radius:8px;border:1px solid #e5e7eb;background:#000"></video>
+          <div style="flex:1">
+            <div class="btnrow">
+              <button onclick="startCamera()">Start Camera</button>
+              <button onclick="captureSequence()">Capture Sequence</button>
+            </div>
+            <div class="btnrow" style="margin-top:10px">
+              <button onclick="faceSubmit()">Submit Frames</button>
+              <button onclick="faceMatch()">Face Match</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="faceStatus" class="tip"></div>
+      </div>
+
+      <!-- DigiLocker -->
+      <div id="dlg-digi" class="card hidden">
+        <h3 style="margin-top:0">DigiLocker</h3>
+        <div class="btnrow">
+          <button onclick="digiCreate()">Create Session</button>
+          <button onclick="digiExchange()">Exchange Code</button>
+        </div>
+        <div id="digiInfo" class="tip"></div>
+      </div>
+
+      <button onclick="goto('screen-voice')">Continue ▶</button>
+      <p class="tip">Tip: Tap mic and speak in Hindi/English.</p>
+    </div>
+
+    <!-- Voice Co-pilot -->
+    <div class="screen hidden" id="screen-voice">
+      <h1>Voice Co-pilot</h1>
+      <div class="card">
+        <p>Say: <i>“Mujhe 20000 loan chahiye 6 months ke liye.”</i></p>
+        <input id="utterance" placeholder="Type or speak your sentence..." />
+        <div class="btnrow">
+          <button onclick="voiceIntent()">🎙 Parse Utterance</button>
+          <button onclick="startSpeechInput()">🎤 Speak</button>
+        </div>
+        <div class="tip" style="margin-top:8px; display:flex; gap:8px; align-items:center">
+          <span>Speech language:</span>
+          <select onchange="setSpeechLang(this.value)" style="padding:6px 8px; border:1px solid #d0d5dd; border-radius:8px">
+            <option value="hi-IN" selected>Hindi (hi-IN)</option>
+            <option value="en-IN">English (en-IN)</option>
+            <option value="bn-IN">Bengali (bn-IN)</option>
+            <option value="ta-IN">Tamil (ta-IN)</option>
+            <option value="kn-IN">Kannada (kn-IN)</option>
+            <option value="mr-IN">Marathi (mr-IN)</option>
+            <option value="te-IN">Telugu (te-IN)</option>
+          </select>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Auto-filled form</h3>
+        <label>Amount (₹)</label>
+        <input id="amount" type="number" />
+        <label>Tenure (months)</label>
+        <input id="tenure" type="number" />
+        <label>Purpose</label>
+        <input id="purpose" />
+      </div>
+      <button onclick="underwrite()">Get Offer ▶</button>
+    </div>
+
+    <!-- Decision -->
+    <div class="screen hidden" id="screen-decision">
+      <h1>Decision & Reasons</h1>
+      <div class="card" id="offer"></div>
+      <div class="card" id="explain"></div>
+      <button onclick="goto('screen-sync')">Continue ▶</button>
+    </div>
+
+    <!-- Sync Center -->
+    <div class="screen hidden" id="screen-sync">
+      <h1>Sync Center</h1>
+      <div class="card">
+        <p>Uploads: KYC (2/3 chunks) • Bank (1/5) • Liveness (queued)</p>
+        <div class="progress"><div class="bar" id="bar1" style="width:66%"></div></div>
+        <div class="progress"><div class="bar" id="bar2" style="width:20%"></div></div>
+        <div class="progress"><div class="bar" id="bar3" style="width:0%"></div></div>
+        <div class="btnrow">
+          <button onclick="simulateRetry()">Retry Now</button>
+          <button onclick="liteUpload()">Lite Upload</button>
+        </div>
+      </div>
+      <button onclick="goto('screen-repay')">Go to Repayment ▶</button>
+    </div>
+
+    <!-- Repayment -->
+    <div class="screen hidden" id="screen-repay">
+      <h1>Repayment</h1>
+      <div class="card" id="repaycard">
+        <p>Next EMI: <b>—</b></p>
+        <p>Auto-debit: <b>Enabled</b></p>
+      </div>
+      <div class="btnrow">
+        <button onclick="payNow()">Pay Now</button>
+        <button onclick="openReschedule()">Reschedule (1-time)</button>
+      </div>
+      <p class="tip">We’ll send reminders via SMS/WhatsApp in your language.</p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
